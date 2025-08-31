@@ -1,6 +1,6 @@
 # Mudream Collection
 
-A modern, interactive web application for managing and displaying collections with a beautiful, responsive interface.
+A modern, interactive web application for managing and displaying [mudream.online](https://mudream.online) items collections with a easy-to-use interface.
 
 ## 🚀 Features
 
@@ -65,36 +65,6 @@ mudream-collection/
 
 4. Visit `http://localhost:8000` in your browser
 
-## 📖 Usage
-
-- **Browse Items**: Navigate through the collection using the interface
-- **View Details**: Click on items to see more information
-- **Responsive Navigation**: Use the interface on any device size
-
-## 🎨 Customization
-
-### Adding New Items
-
-Edit the `items.json` file to add new collection items:
-
-```json
-{
-  "id": "unique-id",
-  "title": "Item Title",
-  "description": "Item description",
-  "image": "path/to/image.jpg",
-  "category": "category-name"
-}
-```
-
-### Styling
-
-Modify `style.css` to customize the appearance:
-- Colors and themes
-- Layout and spacing
-- Typography
-- Animations and transitions
-
 ## 🤝 Contributing
 
 1. Fork the repository
@@ -109,13 +79,7 @@ This project is open source and available under the [MIT License](LICENSE).
 
 ## 👨‍💻 Author
 
-**Arthur** - [GitHub Profile](https://github.com/arthugr)
-
-## 🙏 Acknowledgments
-
-- Modern web development practices
-- Responsive design principles
-- Clean code architecture
+**Arthur G** - [GitHub Profile](https://github.com/arthugr)
 
 ---
 
