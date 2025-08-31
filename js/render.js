@@ -512,12 +512,17 @@ function renderItemPreview(item) {
   previewWrap.appendChild(
     h(
       "div",
-      { class: "col", style: "gap: 12px; align-items: center; text-align: center; justify-content: center; height: 100%;" },
+      {
+        class: "col",
+        style:
+          "gap: 12px; align-items: center; text-align: center; justify-content: center; height: 100%;",
+      },
       // Item header with image above name, both centered
       h(
         "div",
         {
-          style: "display: flex; flex-direction: column; align-items: center; gap: 8px;",
+          style:
+            "display: flex; flex-direction: column; align-items: center; gap: 8px;",
         },
         imageUrl
           ? h("img", {
@@ -527,32 +532,40 @@ function renderItemPreview(item) {
               onerror: "this.style.display='none'",
               style: "width: 80px; height: 80px; object-fit: contain;",
             })
-          : h("div", { class: "item-image large", style: "width: 80px; height: 80px;" }),
+          : h("div", {
+              class: "item-image large",
+              style: "width: 80px; height: 80px;",
+            }),
         h(
           "div",
           {
-            style: "font-size: 18px; font-weight: 700; color: #4ade80; text-align: center;",
+            style:
+              "font-size: 18px; font-weight: 700; color: #4ade80; text-align: center;",
           },
           `${item.name} +${App.level || 0}`
         )
       ),
       // Properties section
       properties.length > 0
-        ? h("div", { style: "margin-bottom: 8px; text-align: center;" }, ...properties)
+        ? h(
+            "div",
+            { style: "margin-bottom: 8px; text-align: center;" },
+            ...properties
+          )
         : null,
       // Excellent options section
       exeOptionsElements.length > 0
         ? h(
             "div",
-            { style: "margin-bottom: 8px; text-align: center;" },
-            h(
-              "div",
-              {
-                style:
-                  "color: var(--text); font-size: 13px; margin-bottom: 6px; font-weight: 600;",
-              },
-              "Excellent Options:"
-            ),
+            { style: "margin-bottom: 5px; text-align: center;" },
+            // h(
+            //   "div",
+            //   {
+            //     style:
+            //       "color: var(--text); font-size: 13px; margin-bottom: 6px; font-weight: 600;",
+            //   },
+            //   "Excellent Options"
+            // ),
             ...exeOptionsElements
           )
         : null
@@ -875,28 +888,23 @@ function renderCollection() {
           "div",
           { class: "col", style: "flex: 1; min-width: 0;" },
           h("div", { class: "set-item-name" }, `${c.name} +${c.level || 0}`),
-          h(
-            "div",
-            { class: "hint" },
-            getSlotName(c.slot || originalItem?.slot)
-          ),
           // Properties section
           properties.length > 0
-            ? h("div", { style: "margin-bottom: 8px;" }, ...properties)
+            ? h("div", {  }, ...properties)
             : null,
           // Excellent options section
           exeOptionsElements.length > 0
             ? h(
                 "div",
-                { style: "margin-bottom: 8px;" },
-                h(
-                  "div",
-                  {
-                    style:
-                      "color: var(--text); font-size: 13px; margin-bottom: 6px; font-weight: 600;",
-                  },
-                  "Excellent Options:"
-                ),
+                { style: "margin-bottom: 5px;" },
+                // h(
+                //   "div",
+                //   {
+                //     style:
+                //       "color: var(--text); font-size: 13px; margin-bottom: 6px; font-weight: 600;",
+                //   },
+                //   "Excellent Options"
+                // ),
                 ...exeOptionsElements
               )
             : null,
@@ -905,7 +913,8 @@ function renderCollection() {
             ? h(
                 "div",
                 {
-                  style: "color: #8b93a6; font-size: 12px; font-style: italic; margin-top: 4px;",
+                  style:
+                    "color: #8b93a6; font-size: 12px; font-style: italic; margin-top: 4px;",
                 },
                 "Nothing Required"
               )
@@ -1182,15 +1191,15 @@ function renderCollection() {
         exeOptionsElements.length > 0
           ? h(
               "div",
-              { style: "margin-bottom: 16px;" },
-              h(
-                "div",
-                {
-                  style:
-                    "color: var(--text); font-size: 13px; margin-bottom: 6px; font-weight: 600;",
-                },
-                "Excellent Options:"
-              ),
+              { style: "margin-bottom: 5px;" },
+              // h(
+              //   "div",
+              //   {
+              //     style:
+              //       "color: var(--text); font-size: 13px; margin-bottom: 6px; font-weight: 600;",
+              //   },
+              //   "Excellent Options"
+              // ),
               ...exeOptionsElements.filter(Boolean)
             )
           : null,
@@ -1199,7 +1208,8 @@ function renderCollection() {
           ? h(
               "div",
               {
-                style: "color: #8b93a6; font-size: 12px; font-style: italic; margin-top: 8px;",
+                style:
+                  "color: #8b93a6; font-size: 12px; font-style: italic; margin-top: 8px;",
               },
               "Nothing Required"
             )
