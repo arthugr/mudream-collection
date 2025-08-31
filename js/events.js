@@ -105,8 +105,8 @@ $("#skill-toggle").addEventListener("change", (e) => {
 
 $("#reset-config").addEventListener("click", resetConfig);
 $("#add-to-collection").addEventListener("click", addToCollection);
-$("#export").addEventListener("click", exportCollection);
-$("#import").addEventListener("click", openImport);
+$("#export").addEventListener("click", exportCurrentCollection);
+$("#import").addEventListener("click", openImportCollectionModal);
 $("#import-file").addEventListener(
   "change",
   (e) => e.target.files[0] && doImport(e.target.files[0])

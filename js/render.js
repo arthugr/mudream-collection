@@ -371,6 +371,9 @@ function renderSelection() {
   } else {
     addButton.textContent = "Add to Collection";
   }
+  
+  // Show collection compatibility checker
+  renderCollectionChecker(it);
 
   // Render live preview
   renderItemPreview(it);
@@ -1233,4 +1236,107 @@ function renderCollection() {
 
     wrap.appendChild(row);
   });
+}
+
+function renderCollectionChecker(item) {
+  const container = $("#collection-checker");
+  if (!container) return;
+  
+  const results = Collections.checkItemInCollections(item);
+  
+  if (results.length === 0) {
+    container.innerHTML = "";
+    return;
+  }
+  
+  container.innerHTML = "";
+  
+  const header = h(
+    "div",
+    { 
+      style: "color: var(--text); font-size: 13px; margin-bottom: 8px; font-weight: 600; border-bottom: 1px solid var(--border); padding-bottom: 4px;"
+    },
+    "Other Collections"
+  );
+  container.appendChild(header);
+  
+  results.forEach(result => {
+    const resultDiv = h(
+      "div",
+      {
+        style: `display: flex; align-items: center; gap: 8px; padding: 6px 8px; border-radius: 6px; margin-bottom: 4px; background: ${result.wouldFit ? 'rgba(74, 222, 128, 0.1)' : 'rgba(248, 113, 113, 0.1)'}; border: 1px solid ${result.wouldFit ? 'rgba(74, 222, 128, 0.3)' : 'rgba(248, 113, 113, 0.3)'};`
+      },
+      h(
+        "div",
+        {
+          style: `width: 8px; height: 8px; border-radius: 50%; background: ${result.wouldFit ? '#4ade80' : '#f87171'}; flex-shrink: 0;`
+        }
+      ),
+      h(
+        "div",
+        { style: "flex: 1; font-size: 12px;" },
+        h(
+          "div",
+          { style: "font-weight: 500; color: var(--text);" },
+          result.collectionName
+        ),
+        h(
+          "div",
+          { style: "font-size: 11px; color: var(--muted);" },
+          result.reason
+        )
+      ),
+      result.wouldFit && h(
+        "button",
+        {
+          class: "ghost small",
+          style: "padding: 2px 6px; font-size: 10px;",
+          onclick: () => addItemToCollection(item, result.collectionId)
+        },
+        "Add"
+      )
+    );
+    
+    container.appendChild(resultDiv);
+  });
+}
+
+function addItemToCollection(item, collectionId) {
+  // Save current collection
+  Collections.saveActiveCollection();
+  
+  // Switch to target collection
+  const wasActiveCollection = Collections.activeCollectionId;
+  Collections.switchCollection(collectionId);
+  
+  // Add item to the target collection
+  const entry = {
+    id: item.id,
+    index: item.index,
+    displayId: item.displayId,
+    name: item.name,
+    level: App.level,
+    options: App.options,
+    luck: App.luck,
+    skill: App.skill,
+    exeOptions: Array.from(App.required.exe).map(optionText => ({
+      text: optionText,
+      rarity: App.exeRarities.get(optionText) || "normal"
+    })),
+    done: false,
+    ts: Date.now(),
+  };
+  
+  App.collection.push(entry);
+  Collections.saveActiveCollection();
+  
+  // Switch back to original collection
+  Collections.switchCollection(wasActiveCollection);
+  
+  // Update UI
+  renderCollection();
+  renderCollectionManager();
+  renderCollectionChecker(item);
+  
+  alert(`Added ${item.name} to "${Collections.collections[collectionId].name}" collection!`);
 }

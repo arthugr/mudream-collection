@@ -9,7 +9,7 @@ const App = {
   skill: false,
   required: { exe: new Set() }, // user-selected requirements
   exeRarities: new Map(), // excellent option -> rarity
-  collection: loadLS(LS_KEYS.COLLECTION, []),
+  collection: [],
   selectedSet: null, // currently selected set for guided form
   setConfig: {}, // configuration for set items (level, options, etc.)
   hideCompleted: false, // new filter for hiding completed items
@@ -20,10 +20,15 @@ async function boot() {
   App.dataset = await loadDataset();
   App.skillData = App.dataset.skillData;
   generateItemSets(); // Generate sets from dataset
+  
+  // Initialize collections system
+  Collections.init();
+  
   renderItemList();
   renderSelection();
   renderCollection();
   renderSetSelector();
+  renderCollectionManager();
 }
 
 function selectItem(id) {
@@ -197,7 +202,7 @@ function toggleDone(idx) {
 }
 
 function persistCollection() {
-  saveLS(LS_KEYS.COLLECTION, App.collection);
+  Collections.saveActiveCollection();
 }
 
 /* ------------------ Export/Import ------------------ */

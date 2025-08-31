@@ -277,3 +277,190 @@ function generateItemSets() {
 
   ITEM_SETS = sets;
 }
+
+// Multi-collection support
+const COLLECTIONS_STORAGE_KEY = "mudream-collections";
+const ACTIVE_COLLECTION_KEY = "mudream-active-collection";
+
+// Collection management
+const Collections = {
+  collections: {},
+  activeCollectionId: null,
+  
+  // Initialize collections from storage
+  init() {
+    const stored = localStorage.getItem(COLLECTIONS_STORAGE_KEY);
+    if (stored) {
+      this.collections = JSON.parse(stored);
+    }
+    
+    // Create default collection if none exist
+    if (Object.keys(this.collections).length === 0) {
+      this.createCollection("My Collection", "Default collection");
+    }
+    
+    // Set active collection
+    const activeId = localStorage.getItem(ACTIVE_COLLECTION_KEY);
+    if (activeId && this.collections[activeId]) {
+      this.activeCollectionId = activeId;
+    } else {
+      this.activeCollectionId = Object.keys(this.collections)[0];
+    }
+    
+    // Load active collection into App.collection
+    this.loadActiveCollection();
+  },
+  
+  // Create a new collection
+  createCollection(name, description = "") {
+    const id = `collection_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    const collection = {
+      id,
+      name,
+      description,
+      items: [],
+      createdAt: Date.now(),
+      updatedAt: Date.now()
+    };
+    
+    this.collections[id] = collection;
+    this.saveCollections();
+    return id;
+  },
+  
+  // Delete a collection
+  deleteCollection(id) {
+    if (Object.keys(this.collections).length <= 1) {
+      alert("Cannot delete the last collection. Create a new one first.");
+      return false;
+    }
+    
+    delete this.collections[id];
+    
+    // If deleting active collection, switch to first available
+    if (this.activeCollectionId === id) {
+      this.activeCollectionId = Object.keys(this.collections)[0];
+      this.loadActiveCollection();
+    }
+    
+    this.saveCollections();
+    return true;
+  },
+  
+  // Switch to a different collection
+  switchCollection(id) {
+    if (!this.collections[id]) return false;
+    
+    // Save current collection
+    this.saveActiveCollection();
+    
+    // Switch to new collection
+    this.activeCollectionId = id;
+    this.loadActiveCollection();
+    
+    // Update storage
+    localStorage.setItem(ACTIVE_COLLECTION_KEY, id);
+    
+    return true;
+  },
+  
+  // Load active collection into App.collection
+  loadActiveCollection() {
+    if (this.activeCollectionId && this.collections[this.activeCollectionId]) {
+      App.collection = [...this.collections[this.activeCollectionId].items];
+    } else {
+      App.collection = [];
+    }
+  },
+  
+  // Save current App.collection to active collection
+  saveActiveCollection() {
+    if (this.activeCollectionId && this.collections[this.activeCollectionId]) {
+      this.collections[this.activeCollectionId].items = [...App.collection];
+      this.collections[this.activeCollectionId].updatedAt = Date.now();
+      this.saveCollections();
+    }
+  },
+  
+  // Save all collections to storage
+  saveCollections() {
+    localStorage.setItem(COLLECTIONS_STORAGE_KEY, JSON.stringify(this.collections));
+  },
+  
+  // Get active collection info
+  getActiveCollection() {
+    return this.collections[this.activeCollectionId];
+  },
+  
+  // Get all collections
+  getAllCollections() {
+    return Object.values(this.collections);
+  },
+  
+  // Check if an item would fit in any collection
+  checkItemInCollections(item) {
+    const results = [];
+    
+    Object.values(this.collections).forEach(collection => {
+      if (collection.id === this.activeCollectionId) return; // Skip current collection
+      
+      const hasItem = collection.items.some(collectionItem => 
+        collectionItem.id === item.id
+      );
+      
+      if (!hasItem) {
+        results.push({
+          collectionId: collection.id,
+          collectionName: collection.name,
+          wouldFit: true,
+          reason: "Item not in collection"
+        });
+      } else {
+        results.push({
+          collectionId: collection.id,
+          collectionName: collection.name,
+          wouldFit: false,
+          reason: "Item already in collection"
+        });
+      }
+    });
+    
+    return results;
+  },
+  
+  // Export collection to JSON
+  exportCollection(id) {
+    const collection = this.collections[id];
+    if (!collection) return null;
+    
+    return JSON.stringify({
+      name: collection.name,
+      description: collection.description,
+      items: collection.items,
+      exportedAt: Date.now(),
+      version: "1.0"
+    }, null, 2);
+  },
+  
+  // Import collection from JSON
+  importCollection(jsonData) {
+    try {
+      const data = JSON.parse(jsonData);
+      
+      // Validate required fields
+      if (!data.name || !Array.isArray(data.items)) {
+        throw new Error("Invalid collection format");
+      }
+      
+      // Create new collection with imported data
+      const id = this.createCollection(data.name, data.description || "");
+      this.collections[id].items = data.items;
+      this.saveCollections();
+      
+      return id;
+    } catch (error) {
+      console.error("Failed to import collection:", error);
+      return null;
+    }
+  }
+};

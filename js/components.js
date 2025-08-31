@@ -408,3 +408,370 @@ function groupCollectionBySets() {
 
   return { setGroups, individualItems };
 }
+
+/* ------------------ Collection Manager ------------------ */
+function renderCollectionManager() {
+  const container = $("#collection-manager");
+  if (!container) return;
+  
+  container.innerHTML = "";
+  
+  const activeCollection = Collections.getActiveCollection();
+  const allCollections = Collections.getAllCollections();
+  
+  // Collection selector dropdown
+  const selector = h(
+    "div",
+    { class: "collection-selector" },
+    h(
+      "select",
+      {
+        id: "collection-dropdown",
+        onchange: (e) => {
+          Collections.switchCollection(e.target.value);
+          renderCollection();
+          renderCollectionManager();
+        }
+      },
+      ...allCollections.map(collection => 
+        h(
+          "option",
+          {
+            value: collection.id,
+            selected: collection.id === Collections.activeCollectionId
+          },
+          `${collection.name} (${collection.items.length} items)`
+        )
+      )
+    ),
+    h(
+      "button",
+      {
+        class: "ghost small",
+        onclick: openCreateCollectionModal,
+        style: "margin-left: 8px; padding: 6px 10px;"
+      },
+      "New"
+    )
+  );
+  
+  // Active collection info
+  const info = h(
+    "div",
+    { class: "collection-info" },
+    h(
+      "div",
+      { class: "collection-name" },
+      activeCollection.name
+    ),
+    activeCollection.description && h(
+      "div",
+      { class: "collection-description" },
+      activeCollection.description
+    ),
+    h(
+      "div",
+      { class: "collection-stats" },
+      `${activeCollection.items.length} items • Last updated: ${new Date(activeCollection.updatedAt).toLocaleDateString()}`
+    )
+  );
+  
+  // Action buttons
+  const actions = h(
+    "div",
+    { class: "collection-actions" },
+    h(
+      "button",
+      {
+        class: "ghost small",
+        onclick: () => openEditCollectionModal(activeCollection.id),
+        style: "margin-right: 8px;"
+      },
+      "Edit"
+    ),
+    h(
+      "button",
+      {
+        class: "ghost small",
+        onclick: () => exportCurrentCollection(),
+        style: "margin-right: 8px;"
+      },
+      "Export"
+    ),
+    h(
+      "button",
+      {
+        class: "ghost small",
+        onclick: openImportCollectionModal,
+        style: "margin-right: 8px;"
+      },
+      "Import"
+    ),
+    h(
+      "button",
+      {
+        class: "ghost small danger",
+        onclick: () => deleteCurrentCollection(),
+        disabled: allCollections.length <= 1
+      },
+      "Delete"
+    )
+  );
+  
+  container.appendChild(selector);
+  container.appendChild(info);
+  container.appendChild(actions);
+}
+
+function openCreateCollectionModal() {
+  const modal = createModal("Create New Collection", "");
+  const content = modal.querySelector(".modal-content");
+  
+  content.innerHTML = "";
+  content.appendChild(
+    h(
+      "div",
+      { class: "col", style: "gap: 16px;" },
+      h(
+        "div",
+        { class: "col" },
+        h("label", { class: "small muted" }, "Collection Name"),
+        h("input", {
+          type: "text",
+          id: "new-collection-name",
+          placeholder: "Enter collection name",
+          value: ""
+        })
+      ),
+      h(
+        "div",
+        { class: "col" },
+        h("label", { class: "small muted" }, "Description (optional)"),
+        h("textarea", {
+          id: "new-collection-description",
+          placeholder: "Enter description",
+          rows: 3,
+          style: "resize: vertical; padding: 8px 12px; border-radius: 8px; border: 1px solid var(--border); background: #0f1320; color: var(--text);"
+        })
+      ),
+      h(
+        "div",
+        { class: "row", style: "justify-content: flex-end; gap: 8px;" },
+        h(
+          "button",
+          {
+            class: "ghost",
+            onclick: () => closeModal()
+          },
+          "Cancel"
+        ),
+        h(
+          "button",
+          {
+            class: "primary",
+            onclick: createNewCollection
+          },
+          "Create Collection"
+        )
+      )
+    )
+  );
+  
+  showModal(modal);
+}
+
+function createNewCollection() {
+  const name = $("#new-collection-name").value.trim();
+  const description = $("#new-collection-description").value.trim();
+  
+  if (!name) {
+    alert("Please enter a collection name");
+    return;
+  }
+  
+  const newId = Collections.createCollection(name, description);
+  Collections.switchCollection(newId);
+  
+  closeModal();
+  renderCollection();
+  renderCollectionManager();
+}
+
+function openEditCollectionModal(collectionId) {
+  const collection = Collections.collections[collectionId];
+  if (!collection) return;
+  
+  const modal = createModal("Edit Collection", "");
+  const content = modal.querySelector(".modal-content");
+  
+  content.innerHTML = "";
+  content.appendChild(
+    h(
+      "div",
+      { class: "col", style: "gap: 16px;" },
+      h(
+        "div",
+        { class: "col" },
+        h("label", { class: "small muted" }, "Collection Name"),
+        h("input", {
+          type: "text",
+          id: "edit-collection-name",
+          placeholder: "Enter collection name",
+          value: collection.name
+        })
+      ),
+      h(
+        "div",
+        { class: "col" },
+        h("label", { class: "small muted" }, "Description"),
+        h("textarea", {
+          id: "edit-collection-description",
+          placeholder: "Enter description",
+          rows: 3,
+          style: "resize: vertical; padding: 8px 12px; border-radius: 8px; border: 1px solid var(--border); background: #0f1320; color: var(--text);"
+        }, collection.description)
+      ),
+      h(
+        "div",
+        { class: "row", style: "justify-content: flex-end; gap: 8px;" },
+        h(
+          "button",
+          {
+            class: "ghost",
+            onclick: () => closeModal()
+          },
+          "Cancel"
+        ),
+        h(
+          "button",
+          {
+            class: "primary",
+            onclick: () => saveCollectionEdit(collectionId)
+          },
+          "Save Changes"
+        )
+      )
+    )
+  );
+  
+  showModal(modal);
+}
+
+function saveCollectionEdit(collectionId) {
+  const name = $("#edit-collection-name").value.trim();
+  const description = $("#edit-collection-description").value.trim();
+  
+  if (!name) {
+    alert("Please enter a collection name");
+    return;
+  }
+  
+  const collection = Collections.collections[collectionId];
+  if (collection) {
+    collection.name = name;
+    collection.description = description;
+    collection.updatedAt = Date.now();
+    Collections.saveCollections();
+  }
+  
+  closeModal();
+  renderCollectionManager();
+}
+
+function exportCurrentCollection() {
+  const activeCollection = Collections.getActiveCollection();
+  if (!activeCollection) return;
+  
+  const jsonData = Collections.exportCollection(activeCollection.id);
+  if (!jsonData) return;
+  
+  const blob = new Blob([jsonData], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `${activeCollection.name.replace(/[^a-z0-9]/gi, '_').toLowerCase()}_collection.json`;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 0);
+}
+
+function openImportCollectionModal() {
+  const modal = createModal("Import Collection", "");
+  const content = modal.querySelector(".modal-content");
+  
+  content.innerHTML = "";
+  content.appendChild(
+    h(
+      "div",
+      { class: "col", style: "gap: 16px;" },
+      h(
+        "div",
+        { class: "col" },
+        h("label", { class: "small muted" }, "Collection File"),
+        h("input", {
+          type: "file",
+          id: "import-collection-file",
+          accept: ".json",
+          onchange: (e) => {
+            const file = e.target.files[0];
+            if (file) {
+              importCollectionFromFile(file);
+            }
+          }
+        })
+      ),
+      h(
+        "div",
+        { class: "hint" },
+        "Select a collection JSON file to import. The collection will be added to your collections list."
+      ),
+      h(
+        "div",
+        { class: "row", style: "justify-content: flex-end;" },
+        h(
+          "button",
+          {
+            class: "ghost",
+            onclick: () => closeModal()
+          },
+          "Cancel"
+        )
+      )
+    )
+  );
+  
+  showModal(modal);
+}
+
+function importCollectionFromFile(file) {
+  const reader = new FileReader();
+  reader.onload = () => {
+    try {
+      const importedId = Collections.importCollection(reader.result);
+      if (importedId) {
+        closeModal();
+        renderCollectionManager();
+        alert("Collection imported successfully!");
+      } else {
+        alert("Failed to import collection. Please check the file format.");
+      }
+    } catch (e) {
+      alert("Import failed: " + e.message);
+    }
+  };
+  reader.readAsText(file);
+}
+
+function deleteCurrentCollection() {
+  const activeCollection = Collections.getActiveCollection();
+  if (!activeCollection) return;
+  
+  const confirmed = confirm(`Are you sure you want to delete "${activeCollection.name}"? This action cannot be undone.`);
+  if (!confirmed) return;
+  
+  if (Collections.deleteCollection(activeCollection.id)) {
+    renderCollection();
+    renderCollectionManager();
+  }
+}
