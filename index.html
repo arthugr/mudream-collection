@@ -1,0 +1,552 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Item Collection Manager — MuDream Classic X5</title>
+    <link rel="preconnect" href="https://unpkg.com" />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <header>
+      <h1>MUDREAM (x5): Collection Manager</h1>
+      <span class="tag">Search → Configure → Add to Collection → Tick Off</span>
+      <span class="tag">Data cached locally</span>
+    </header>
+
+    <div class="container">
+      <!-- Left: Search & Items -->
+      <div class="card" id="panel-left">
+        <!-- Tab Navigation -->
+        <div class="section" style="padding-bottom: 0">
+          <div
+            class="row"
+            style="
+              gap: 0;
+              border-bottom: 1px solid var(--border);
+              display: flex;
+            "
+          >
+            <button
+              id="tab-items"
+              class="ghost"
+              style="
+                flex: 1;
+                border-radius: 0;
+                border-bottom: 2px solid #6aa7ff;
+                background: rgba(106, 167, 255, 0.1);
+                padding: 12px 16px;
+                font-weight: 600;
+              "
+            >
+              Individual Items
+            </button>
+            <button
+              id="tab-sets"
+              class="ghost"
+              style="
+                flex: 1;
+                border-radius: 0;
+                border-bottom: 2px solid transparent;
+                padding: 12px 16px;
+                font-weight: 600;
+              "
+            >
+              Item Sets
+            </button>
+          </div>
+        </div>
+
+        <!-- Individual Items Tab -->
+        <div id="items-tab-content" style="display: flex; flex-direction: column; height: 100%">
+          <div class="section">
+            <div class="col">
+              <label class="small muted">Lookup item</label>
+              <input
+                id="search"
+                type="text"
+                placeholder="Search by name (e.g., Dragon Armor, Sword) — Ctrl+K"
+              />
+              <div
+                class="row"
+                style="justify-content: space-between; align-items: center"
+              >
+                <div class="row" style="align-items: center; gap: 8px">
+                  <label class="checkbox">
+                    <input type="checkbox" id="armor-only" checked />
+                    <span class="small">Armor only</span>
+                  </label>
+                </div>
+                <div class="row">
+                  <span class="hint"
+                    >Dataset:
+                    <span id="dataset-status" class="mono">loading…</span></span
+                  >
+                  <button class="ghost small" id="reload">Reload data</button>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div
+            class="section list"
+            id="item-list"
+            aria-label="Items list"
+            style="flex: 1; min-height: 0"
+          ></div>
+        </div>
+
+        <!-- Sets Tab Content -->
+        <div
+          id="sets-tab-content"
+          style="display: none; height: 100%; overflow: hidden; flex: 1"
+        >
+          <div
+            class="section"
+            style="
+              height: 100%;
+              display: flex;
+              flex-direction: column;
+              overflow: hidden;
+            "
+          >
+            <div
+              class="col"
+              style="
+                height: 100%;
+                display: flex;
+                flex-direction: column;
+                overflow: hidden;
+              "
+            >
+              <label class="small muted">Search Item Sets</label>
+              <input
+                type="text"
+                id="set-search"
+                placeholder="Search sets..."
+                style="margin-bottom: 12px"
+              />
+              <label class="small muted">Select Item Set</label>
+              <div
+                class="set-selector"
+                id="set-selector"
+                style="flex: 1; min-height: 0"
+              >
+                <!-- Set options will be populated here -->
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Middle: Item Configurator -->
+      <div
+        class="card"
+        id="panel-mid"
+        style="display: flex; flex-direction: column"
+      >
+        <!-- Top Row: Selection Header -->
+        <div
+          class="section"
+          id="selection-header"
+          style="display: none; flex-shrink: 0"
+        >
+          <div
+            class="row"
+            style="justify-content: space-between; align-items: flex-start"
+          >
+            <div class="row small muted" id="sel-meta"></div>
+            <div class="row">
+              <button class="ghost" id="clear-selection">Clear</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Select Item Notice -->
+        <div
+          class="section"
+          id="select-notice"
+          style="
+            display: none;
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+          "
+        >
+          <div
+            style="
+              display: flex;
+              flex-direction: column;
+              align-items: center;
+              justify-content: center;
+              text-align: center;
+              padding: 40px 20px;
+              color: var(--muted);
+            "
+          >
+            <div style="font-size: 64px; margin-bottom: 24px; opacity: 0.4">
+              🎯
+            </div>
+            <div
+              style="
+                font-size: 20px;
+                margin-bottom: 12px;
+                font-weight: 600;
+                color: var(--text);
+              "
+            >
+              Select an Item
+            </div>
+            <div style="font-size: 15px; line-height: 1.6; max-width: 280px">
+              Choose an item from the left panel to configure its properties and
+              add it to your collection
+            </div>
+          </div>
+        </div>
+
+        <!-- Main Content Area: Form and Preview Side by Side -->
+        <div
+          id="main-content"
+          style="
+            display: none;
+            flex: 1;
+            display: flex;
+            gap: 14px;
+            min-height: 0;
+          "
+        >
+          <!-- Left: Form Sections -->
+          <div
+            style="flex: 1; display: flex; flex-direction: column; min-width: 0"
+          >
+            <!-- Item Type Header -->
+            <div
+              class="section"
+              id="item-type-header"
+              style="display: none; flex-shrink: 0"
+            >
+              <div
+                style="
+                  font-size: 20px;
+                  font-weight: 700;
+                  color: #6aa7ff;
+                  margin-bottom: 8px;
+                "
+                id="item-type-title"
+              ></div>
+            </div>
+
+            <!-- Level Section -->
+            <div
+              class="section"
+              id="level-section"
+              style="display: none; flex-shrink: 0"
+            >
+              <div
+                style="font-weight: 600; margin-bottom: 8px; font-size: 16px"
+              >
+                Level
+              </div>
+              <div class="row" style="align-items: center; gap: 12px">
+                <input
+                  type="range"
+                  min="0"
+                  max="15"
+                  value="0"
+                  id="level-slider"
+                  style="flex: 1"
+                />
+                <input
+                  title="Level"
+                  type="number"
+                  min="0"
+                  max="15"
+                  value="0"
+                  id="level-input"
+                  style="width: 80px; text-align: center"
+                />
+              </div>
+              <div class="hint">
+                Current level: <span id="level-display">0</span>
+              </div>
+            </div>
+
+            <!-- Options Section -->
+            <div
+              class="section"
+              id="options-section"
+              style="display: none; flex-shrink: 0"
+            >
+              <div
+                style="font-weight: 600; margin-bottom: 8px; font-size: 16px"
+              >
+                Options
+              </div>
+              <div class="row" style="align-items: center; gap: 12px">
+                <input
+                  type="range"
+                  min="0"
+                  max="7"
+                  value="0"
+                  id="options-slider"
+                  style="flex: 1"
+                />
+                <input
+                  title="Options"
+                  type="number"
+                  min="0"
+                  max="7"
+                  value="0"
+                  id="options-input"
+                  style="width: 80px; text-align: center"
+                />
+              </div>
+              <div class="hint">
+                <span id="options-label">Additional damage:</span>
+                <span id="options-display">+0</span>
+              </div>
+            </div>
+
+            <!-- Luck Section -->
+            <div
+              class="section"
+              id="luck-section"
+              style="display: none; flex-shrink: 0"
+            >
+              <div
+                style="font-weight: 600; margin-bottom: 8px; font-size: 16px"
+              >
+                Luck
+              </div>
+              <div class="row" style="align-items: center; gap: 12px">
+                <label class="toggle-switch">
+                  <input type="checkbox" id="luck-toggle" />
+                  <span class="toggle-slider"></span>
+                </label>
+                <div class="col">
+                  <div class="hint" id="luck-off-text">None</div>
+                  <div
+                    class="hint"
+                    id="luck-on-text"
+                    style="display: none; color: #4ade80"
+                  >
+                    Success rate increase +25%<br />
+                    Critical damage rate +5%
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Skill Section -->
+            <div
+              class="section"
+              id="skill-section"
+              style="display: none; flex-shrink: 0"
+            >
+              <div
+                style="font-weight: 600; margin-bottom: 8px; font-size: 16px"
+              >
+                Skill
+              </div>
+              <div class="row" style="align-items: center; gap: 12px">
+                <label class="toggle-switch">
+                  <input type="checkbox" id="skill-toggle" />
+                  <span class="toggle-slider"></span>
+                </label>
+                <div class="col">
+                  <div class="hint" id="skill-off-text">None</div>
+                  <div
+                    class="hint"
+                    id="skill-on-text"
+                    style="display: none; color: #4ade80"
+                  >
+                    Skill: <span id="skill-name">Unknown</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Excellent Options Section -->
+            <div
+              class="section"
+              id="excellent-section"
+              style="display: none; flex: 1; min-height: 0; overflow-y: auto"
+            >
+              <div
+                style="font-weight: 600; margin-bottom: 8px; font-size: 16px"
+              >
+                Excellent options (max 4)
+              </div>
+              <div id="exe-opts" class="opt-list"></div>
+            </div>
+
+            <!-- Action Section -->
+            <div
+              class="section"
+              id="action-section"
+              style="display: none; flex-shrink: 0"
+            >
+              <div class="row" style="justify-content: flex-end">
+                <button id="reset-config" class="ghost">Reset config</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Right: Live Preview Section -->
+          <div
+            class="section"
+            id="preview-section"
+            style="
+              display: none;
+              flex: 1;
+              min-width: 0;
+              min-height: 0;
+              display: flex;
+              flex-direction: column;
+            "
+          >
+            <div
+              style="
+                font-weight: 600;
+                margin-bottom: 8px;
+                font-size: 16px;
+                flex-shrink: 0;
+              "
+            >
+              Preview
+            </div>
+            <div
+              id="item-preview"
+              style="
+                border: 1px solid var(--border);
+                border-radius: 12px;
+                padding: 16px;
+                background: rgba(15, 23, 42, 0.3);
+                flex: 1;
+                min-height: 0;
+                overflow-y: auto;
+                margin-bottom: 12px;
+              "
+            ></div>
+            <!-- Add to Collection Button -->
+            <button
+              id="add-to-collection"
+              style="
+                width: 100%;
+                padding: 14px 16px;
+                background: linear-gradient(180deg, #059669, #047857);
+                border: 1px solid #047857;
+                border-radius: 12px;
+                color: white;
+                font-weight: 600;
+                font-size: 16px;
+                cursor: pointer;
+                transition: all 0.2s ease;
+                flex-shrink: 0;
+              "
+              onmouseover="this.style.background='linear-gradient(180deg, #10b981, #059669)'"
+              onmouseout="this.style.background='linear-gradient(180deg, #059669, #047857)'"
+            >
+              Add to Collection
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right: Collection -->
+      <div class="card" id="panel-right">
+        <div class="section">
+          <div
+            class="row"
+            style="justify-content: space-between; align-items: center"
+          >
+            <div>
+              <div class="small muted">Your Collection</div>
+              <div style="font-size: 18px; font-weight: 600">
+                <span id="coll-count">0</span> item(s)
+              </div>
+              <div class="small muted">
+                <span id="coll-progress">0%</span> complete
+                <div class="progress-bar">
+                  <div
+                    class="progress-fill"
+                    id="progress-fill"
+                    style="width: 0%"
+                  ></div>
+                </div>
+              </div>
+            </div>
+            <div class="row">
+              <button class="ghost small" id="export" title="Export Collection">
+                📤
+              </button>
+              <button class="ghost small" id="import" title="Import Collection">
+                📥
+              </button>
+              <button
+                class="ghost small danger"
+                id="wipe"
+                title="Clear Collection"
+              >
+                🗑️
+              </button>
+              <input
+                type="file"
+                id="import-file"
+                accept="application/json"
+                style="display: none"
+              />
+            </div>
+          </div>
+        </div>
+        <div class="section">
+          <div class="col">
+            <label class="small muted">Filter collection</label>
+            <input
+              id="collection-search"
+              type="text"
+              placeholder="Search by item name..."
+            />
+            <div class="row" style="align-items: center; gap: 8px; margin-top: 8px;">
+              <label class="checkbox">
+                <input type="checkbox" id="hide-completed" />
+                <span class="small">Hide completed items</span>
+              </label>
+            </div>
+          </div>
+        </div>
+        <div
+          class="section"
+          id="collection-list"
+          style="flex: 1; min-height: 0"
+        ></div>
+      </div>
+    </div>
+
+    <!-- Set Configuration Modal -->
+    <div id="set-modal" class="modal-overlay">
+      <div class="modal">
+        <div class="modal-header">
+          <div class="modal-title" id="modal-set-title">Configure Set</div>
+          <button class="modal-close" id="modal-close">×</button>
+        </div>
+        <div class="modal-content" id="modal-set-content">
+          <!-- Set configuration content will be populated here -->
+        </div>
+      </div>
+    </div>
+
+    <script src="https://unpkg.com/pako@2.1.0/dist/pako.min.js"></script>
+    <script src="js/config.js"></script>
+    <script src="js/utils.js"></script>
+    <script src="js/data.js"></script>
+    <script src="js/app.js"></script>
+    <script src="js/components.js"></script>
+    <script src="js/render.js"></script>
+    <script src="js/events.js"></script>
+    <script>
+      // Initialize the application
+      boot();
+    </script>
+  </body>
+</html>
