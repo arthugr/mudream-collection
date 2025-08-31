@@ -512,12 +512,12 @@ function renderItemPreview(item) {
   previewWrap.appendChild(
     h(
       "div",
-      { class: "col", style: "gap: 12px;" },
-      // Item header with image and name
+      { class: "col", style: "gap: 12px; align-items: center; text-align: center; justify-content: center; height: 100%;" },
+      // Item header with image above name, both centered
       h(
         "div",
         {
-          style: "display: flex; align-items: center; gap: 12px;",
+          style: "display: flex; flex-direction: column; align-items: center; gap: 8px;",
         },
         imageUrl
           ? h("img", {
@@ -525,25 +525,26 @@ function renderItemPreview(item) {
               src: imageUrl,
               alt: item.name,
               onerror: "this.style.display='none'",
+              style: "width: 80px; height: 80px; object-fit: contain;",
             })
-          : h("div", { class: "item-image large" }),
+          : h("div", { class: "item-image large", style: "width: 80px; height: 80px;" }),
         h(
           "div",
           {
-            style: "font-size: 18px; font-weight: 700; color: #4ade80;",
+            style: "font-size: 18px; font-weight: 700; color: #4ade80; text-align: center;",
           },
           `${item.name} +${App.level || 0}`
         )
       ),
       // Properties section
       properties.length > 0
-        ? h("div", { style: "margin-bottom: 8px;" }, ...properties)
+        ? h("div", { style: "margin-bottom: 8px; text-align: center;" }, ...properties)
         : null,
       // Excellent options section
       exeOptionsElements.length > 0
         ? h(
             "div",
-            { style: "margin-bottom: 8px;" },
+            { style: "margin-bottom: 8px; text-align: center;" },
             h(
               "div",
               {

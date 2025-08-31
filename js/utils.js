@@ -184,11 +184,17 @@ function getItemTypeName(item) {
 
   // Check if it's a staff (weapon slot but staff name)
   const isStaff = slot === 0 && itemName.includes("staff");
+  
+  // Check if it's a weapon type that might be assigned to shield slot
+  const isWeapon = /(bow|sword|blade|axe|mace|scepter|dagger|spear|halberd|trident|lance|poleaxe|claw)/.test(itemName);
 
   if (slot === 0 && !isStaff) {
     return ITEM_TYPES.WEAPON_ALL_EXCEPT_STAFFS;
   } else if (isStaff) {
     return ITEM_TYPES.WEAPON_STAFFS;
+  } else if (isWeapon) {
+    // Weapons should be treated as weapons regardless of slot
+    return ITEM_TYPES.WEAPON_ALL_EXCEPT_STAFFS;
   } else if (slot === 1) {
     return ITEM_TYPES.SHIELDS;
   } else if (
@@ -259,6 +265,11 @@ function guessExeCategory(item, exeNormalized) {
 function getGroupForItem(item) {
   if (!item) return 0;
 
+  const itemName = item.name.toLowerCase();
+  
+  // Check if it's a weapon type (should be treated as weapon regardless of slot)
+  const isWeapon = /(bow|sword|blade|axe|mace|scepter|dagger|spear|halberd|trident|lance|poleaxe|claw)/.test(itemName);
+  
   // Map slots to groups - this is based on typical Mu Online item grouping
   const slotToGroup = {
     0: 0, // weapon -> group 0
@@ -270,6 +281,11 @@ function getGroupForItem(item) {
     6: 6, // boots -> group 6
     255: 0, // common -> group 0 (default)
   };
+
+  // Weapons should be treated as weapons regardless of slot
+  if (isWeapon) {
+    return 0; // weapon group
+  }
 
   return slotToGroup[item.slot] || 0;
 }

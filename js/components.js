@@ -564,7 +564,7 @@ function updateHeaderTitle() {
   const currentDatasetConfig = DATASETS[currentDataset];
   const headerTitle = document.querySelector("header h1");
   if (headerTitle && currentDatasetConfig) {
-    headerTitle.textContent = `MUDREAM: Collection Manager (${currentDatasetConfig.name})`;
+    headerTitle.textContent = `MUDREAM: Collection Manager`;
   }
 }
 
