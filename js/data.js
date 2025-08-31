@@ -1,17 +1,24 @@
 /* ------------------ Data Loading (gzip-aware) ------------------ */
-async function loadDataset() {
-  // cache hit?
-  const cached = loadLS(LS_KEYS.DATA, null);
-  if (cached?.items && cached?.raw && cached?.version === "v18") {
-    $("#dataset-status").textContent = "cached ✓";
-    return cached;
+let currentDataset = DEFAULT_DATASET;
+
+async function loadDataset(datasetId = currentDataset) {
+  currentDataset = datasetId;
+  
+  // Get dataset config
+  const datasetConfig = DATASETS[datasetId];
+  if (!datasetConfig) {
+    console.error(`Unknown dataset: ${datasetId}`);
+    return null;
   }
 
-  $("#dataset-status").textContent = "fetching…";
+  $("#dataset-status").textContent = `Loading ${datasetConfig.name}...`;
   let data;
   try {
     // Try JSON directly (server might auto-decompress)
-    const r1 = await fetch(DATA_URL, { cache: "no-store" });
+    const r1 = await fetch(datasetConfig.file, { cache: "no-store" });
+    if (!r1.ok) {
+      throw new Error(`Failed to load ${datasetConfig.name}: ${r1.status} ${r1.statusText}`);
+    }
     const ct = r1.headers.get("content-type") || "";
     if (ct.includes("application/json")) {
       data = await r1.json();
@@ -22,17 +29,59 @@ async function loadDataset() {
       data = JSON.parse(ungz);
     }
   } catch (e) {
-    // ultimate fallback: try arrayBuffer→gunzip if direct JSON failed
-    const r2 = await fetch(DATA_URL, { cache: "no-store" });
-    const buf = await r2.arrayBuffer();
-    const ungz = pako.ungzip(new Uint8Array(buf), { to: "string" });
-    data = JSON.parse(ungz);
+    console.error(`Error loading dataset ${datasetId}:`, e);
+    $("#dataset-status").textContent = `Error loading ${datasetConfig.name}`;
+    alert(`Failed to load ${datasetConfig.name}. Please check if the file exists.`);
+    return null;
   }
 
   const parsed = parseDataset(data);
-  saveLS(LS_KEYS.DATA, parsed);
-  $("#dataset-status").textContent = "fresh ✓";
+  parsed.datasetId = datasetId; // Add dataset identifier
+  $("#dataset-status").textContent = `${datasetConfig.name} ✓`;
   return parsed;
+}
+
+async function switchDataset(datasetId) {
+  if (datasetId === currentDataset) return;
+  
+  // Save current collection state
+  Collections.saveActiveCollection();
+  
+  // Load new dataset
+  const newDataset = await loadDataset(datasetId);
+  if (!newDataset) return;
+  
+  // Update App state
+  App.dataset = newDataset;
+  App.skillData = newDataset.skillData;
+  
+  // Clear current selection
+  App.selectedId = null;
+  App.selectedSet = null;
+  App.required.exe.clear();
+  App.exeRarities.clear();
+  
+  // Regenerate item sets for new dataset
+  generateItemSets();
+  
+  // Initialize collections for new dataset
+  Collections.init(datasetId);
+  
+  // Re-render everything
+  renderItemList();
+  renderSelection();
+  renderCollection();
+  renderSetSelector();
+  renderCollectionManager();
+  
+  // Update dataset switcher
+  $("#dataset-switcher").value = datasetId;
+  
+  // Update header title
+  updateHeaderTitle();
+  
+  // Save active dataset preference
+  localStorage.setItem(LS_KEYS.ACTIVE_DATASET, datasetId);
 }
 
 /* ------------------ Parsing (items, add_option, add_exe_options) ------------------ */
@@ -279,19 +328,28 @@ function generateItemSets() {
 }
 
 // Multi-collection support
-const COLLECTIONS_STORAGE_KEY = "mudream-collections";
-const ACTIVE_COLLECTION_KEY = "mudream-active-collection";
 
 // Collection management
 const Collections = {
   collections: {},
   activeCollectionId: null,
+  currentDataset: DEFAULT_DATASET,
   
-  // Initialize collections from storage
-  init() {
-    const stored = localStorage.getItem(COLLECTIONS_STORAGE_KEY);
+  // Get storage key for current dataset
+  getStorageKey() {
+    return `collections_${this.currentDataset}`;
+  },
+  
+  // Initialize collections from storage for specific dataset
+  init(datasetId = DEFAULT_DATASET) {
+    this.currentDataset = datasetId;
+    const storageKey = this.getStorageKey();
+    
+    const stored = localStorage.getItem(storageKey);
     if (stored) {
       this.collections = JSON.parse(stored);
+    } else {
+      this.collections = {};
     }
     
     // Create default collection if none exist
@@ -300,7 +358,7 @@ const Collections = {
     }
     
     // Set active collection
-    const activeId = localStorage.getItem(ACTIVE_COLLECTION_KEY);
+    const activeId = localStorage.getItem(`${storageKey}_active`);
     if (activeId && this.collections[activeId]) {
       this.activeCollectionId = activeId;
     } else {
@@ -358,9 +416,6 @@ const Collections = {
     this.activeCollectionId = id;
     this.loadActiveCollection();
     
-    // Update storage
-    localStorage.setItem(ACTIVE_COLLECTION_KEY, id);
-    
     return true;
   },
   
@@ -384,7 +439,9 @@ const Collections = {
   
   // Save all collections to storage
   saveCollections() {
-    localStorage.setItem(COLLECTIONS_STORAGE_KEY, JSON.stringify(this.collections));
+    const storageKey = this.getStorageKey();
+    localStorage.setItem(storageKey, JSON.stringify(this.collections));
+    localStorage.setItem(`${storageKey}_active`, this.activeCollectionId);
   },
   
   // Get active collection info

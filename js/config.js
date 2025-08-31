@@ -1,8 +1,40 @@
 /* ------------------ Config ------------------ */
-const DATA_URL = "items.json";
+const DATASETS = {
+  classicx5: {
+    name: "Classic X5",
+    file: "data/classicx5.json"
+  },
+  classicx5dev: {
+    name: "Classic X5 Dev",
+    file: "data/classicx5dev.json"
+  },
+  "6plustest": {
+    name: "6+ Test",
+    file: "data/6plustest.json"
+  },
+  reborn: {
+    name: "Reborn",
+    file: "data/reborn.json"
+  },
+  dreamland: {
+    name: "Dreamland",
+    file: "data/dreamland.json"
+  },
+  legacy: {
+    name: "Legacy",
+    file: "data/legacy.json"
+  },
+  guildwar: {
+    name: "Guild War",
+    file: "data/guildwar.json"
+  }
+};
+
+const DEFAULT_DATASET = "classicx5";
+
 const LS_KEYS = {
-  DATA: "classicx5_dataset_v1",
   COLLECTION: "classicx5_collection_v1",
+  ACTIVE_DATASET: "active_dataset",
 };
 
 /* ------------------ Item Type Constants ------------------ */
@@ -33,7 +65,10 @@ const ITEM_CONFIGS = {
     level: { min: 0, max: 15 },
     options: { min: 0, max: 7, damagePerLevel: 30 },
     luck: {
-      on: [LUCK_OPTIONS.SUCCESS_RATE_INCREASE, LUCK_OPTIONS.CRITICAL_DAMAGE_RATE],
+      on: [
+        LUCK_OPTIONS.SUCCESS_RATE_INCREASE,
+        LUCK_OPTIONS.CRITICAL_DAMAGE_RATE,
+      ],
       off: LUCK_OPTIONS.NONE,
     },
     skill: true,
@@ -104,7 +139,10 @@ const ITEM_CONFIGS = {
     level: { min: 0, max: 15 },
     options: { min: 0, max: 7, damagePerLevel: 30 },
     luck: {
-      on: [LUCK_OPTIONS.SUCCESS_RATE_INCREASE, LUCK_OPTIONS.CRITICAL_DAMAGE_RATE],
+      on: [
+        LUCK_OPTIONS.SUCCESS_RATE_INCREASE,
+        LUCK_OPTIONS.CRITICAL_DAMAGE_RATE,
+      ],
       off: LUCK_OPTIONS.NONE,
     },
     skill: false,
@@ -179,7 +217,10 @@ const ITEM_CONFIGS = {
       defensePerLevel: 5,
     },
     luck: {
-      on: [LUCK_OPTIONS.SUCCESS_RATE_INCREASE, LUCK_OPTIONS.CRITICAL_DAMAGE_RATE],
+      on: [
+        LUCK_OPTIONS.SUCCESS_RATE_INCREASE,
+        LUCK_OPTIONS.CRITICAL_DAMAGE_RATE,
+      ],
       off: LUCK_OPTIONS.NONE,
     },
     skill: true,
@@ -254,7 +295,10 @@ const ITEM_CONFIGS = {
       defensePerLevel: 15,
     },
     luck: {
-      on: [LUCK_OPTIONS.SUCCESS_RATE_INCREASE, LUCK_OPTIONS.CRITICAL_DAMAGE_RATE],
+      on: [
+        LUCK_OPTIONS.SUCCESS_RATE_INCREASE,
+        LUCK_OPTIONS.CRITICAL_DAMAGE_RATE,
+      ],
       off: LUCK_OPTIONS.NONE,
     },
     skill: false,
@@ -325,7 +369,10 @@ const ITEM_CONFIGS = {
     level: { min: 0, max: 15 },
     options: { min: 0, max: 7, hpRecoveryPerLevel: 15 },
     luck: {
-      on: [LUCK_OPTIONS.SUCCESS_RATE_INCREASE, LUCK_OPTIONS.CRITICAL_DAMAGE_RATE],
+      on: [
+        LUCK_OPTIONS.SUCCESS_RATE_INCREASE,
+        LUCK_OPTIONS.CRITICAL_DAMAGE_RATE,
+      ],
       off: LUCK_OPTIONS.NONE,
     },
     skill: false,
@@ -335,7 +382,10 @@ const ITEM_CONFIGS = {
     level: { min: 0, max: 15 },
     options: { min: 0, max: 7, hpRecoveryPerLevel: 1 },
     luck: {
-      on: [LUCK_OPTIONS.SUCCESS_RATE_INCREASE, LUCK_OPTIONS.CRITICAL_DAMAGE_RATE],
+      on: [
+        LUCK_OPTIONS.SUCCESS_RATE_INCREASE,
+        LUCK_OPTIONS.CRITICAL_DAMAGE_RATE,
+      ],
       off: LUCK_OPTIONS.NONE,
     },
     skill: false,

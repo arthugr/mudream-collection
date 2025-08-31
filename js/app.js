@@ -17,18 +17,26 @@ const App = {
 
 /* ------------------ Actions ------------------ */
 async function boot() {
-  App.dataset = await loadDataset();
+  // Get saved dataset preference or use default
+  const savedDataset = localStorage.getItem(LS_KEYS.ACTIVE_DATASET) || DEFAULT_DATASET;
+  currentDataset = savedDataset;
+  
+  // Set dataset switcher to current dataset
+  $("#dataset-switcher").value = savedDataset;
+  
+  App.dataset = await loadDataset(savedDataset);
   App.skillData = App.dataset.skillData;
   generateItemSets(); // Generate sets from dataset
   
-  // Initialize collections system
-  Collections.init();
+  // Initialize collections system for current dataset
+  Collections.init(savedDataset);
   
   renderItemList();
   renderSelection();
   renderCollection();
   renderSetSelector();
   renderCollectionManager();
+  updateHeaderTitle();
 }
 
 function selectItem(id) {
@@ -48,10 +56,7 @@ function adjustLevel(delta) {
 }
 
 function adjustOptionLevel(delta) {
-  const newOptionLevel = Math.max(
-    0,
-    Math.min(7, App.optionLevel + delta)
-  );
+  const newOptionLevel = Math.max(0, Math.min(7, App.optionLevel + delta));
   App.optionLevel = newOptionLevel;
   $("#option-level-input").value = newOptionLevel;
   renderSelection();
@@ -112,9 +117,7 @@ function addToCollection() {
   }
 
   // Check if we're editing an existing item
-  const editingIndex = App.collection.findIndex(
-    (item) => item.id === it.id
-  );
+  const editingIndex = App.collection.findIndex((item) => item.id === it.id);
 
   // Convert excellent options to objects with rarity info
   const exeOptions = [...App.required.exe].map((optionText) => {
@@ -164,6 +167,7 @@ function addToCollection() {
 
   persistCollection();
   renderCollection();
+  renderCollectionManager();
 }
 
 function editIntoConfigurator(idx) {
@@ -193,12 +197,14 @@ function removeFromCollection(idx) {
   App.collection.splice(idx, 1);
   persistCollection();
   renderCollection();
+  renderCollectionManager();
 }
 
 function toggleDone(idx) {
   App.collection[idx].done = !App.collection[idx].done;
   persistCollection();
   renderCollection();
+  renderCollectionManager();
 }
 
 function persistCollection() {

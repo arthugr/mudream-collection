@@ -409,6 +409,41 @@ function groupCollectionBySets() {
   return { setGroups, individualItems };
 }
 
+/* ------------------ Modal Functions ------------------ */
+function createModal(title, content) {
+  const modal = document.createElement("div");
+  modal.className = "modal-overlay";
+  modal.innerHTML = `
+    <div class="modal">
+      <div class="modal-header">
+        <div class="modal-title">${title}</div>
+        <button class="modal-close" onclick="closeModal()">×</button>
+      </div>
+      <div class="modal-content">
+        ${content}
+      </div>
+    </div>
+  `;
+  return modal;
+}
+
+function showModal(modal) {
+  document.body.appendChild(modal);
+  modal.classList.add("active");
+}
+
+function closeModal() {
+  const modal = document.querySelector(".modal-overlay.active");
+  if (modal) {
+    modal.classList.remove("active");
+    setTimeout(() => {
+      if (modal.parentNode) {
+        modal.parentNode.removeChild(modal);
+      }
+    }, 200);
+  }
+}
+
 /* ------------------ Collection Manager ------------------ */
 function renderCollectionManager() {
   const container = $("#collection-manager");
@@ -418,6 +453,7 @@ function renderCollectionManager() {
   
   const activeCollection = Collections.getActiveCollection();
   const allCollections = Collections.getAllCollections();
+  const currentDatasetConfig = DATASETS[currentDataset];
   
   // Collection selector dropdown
   const selector = h(
@@ -472,7 +508,7 @@ function renderCollectionManager() {
     h(
       "div",
       { class: "collection-stats" },
-      `${activeCollection.items.length} items • Last updated: ${new Date(activeCollection.updatedAt).toLocaleDateString()}`
+      `${activeCollection.items.length} items • ${currentDatasetConfig.name} • Last updated: ${new Date(activeCollection.updatedAt).toLocaleDateString()}`
     )
   );
   
@@ -521,6 +557,15 @@ function renderCollectionManager() {
   container.appendChild(selector);
   container.appendChild(info);
   container.appendChild(actions);
+}
+
+// Update header title with current dataset
+function updateHeaderTitle() {
+  const currentDatasetConfig = DATASETS[currentDataset];
+  const headerTitle = document.querySelector("header h1");
+  if (headerTitle && currentDatasetConfig) {
+    headerTitle.textContent = `MUDREAM: Collection Manager (${currentDatasetConfig.name})`;
+  }
 }
 
 function openCreateCollectionModal() {

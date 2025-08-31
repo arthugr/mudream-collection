@@ -37,7 +37,14 @@ function debounce(fn, ms) {
 }
 
 function saveLS(key, val) {
-  localStorage.setItem(key, JSON.stringify(val));
+  try {
+    localStorage.setItem(key, JSON.stringify(val));
+  } catch (error) {
+    console.error('Error saving to localStorage:', error);
+    if (error.name === 'QuotaExceededError') {
+      alert('Storage space is full. Please clear your browser data or try a different browser.');
+    }
+  }
 }
 
 function loadLS(key, fallback) {

@@ -6,10 +6,23 @@
     <title>Item Collection Manager — MuDream Classic X5</title>
     <link rel="preconnect" href="https://unpkg.com" />
     <link rel="stylesheet" href="style.css" />
+    <link rel="icon" type="image/x-icon" href="https://mudream.online/favicon.ico" />
   </head>
   <body>
     <header>
-      <h1>MUDREAM (x5): Collection Manager</h1>
+      <h1>MUDREAM: Collection Manager</h1>
+      <div class="dataset-selector">
+        <label for="dataset-switcher" class="sr-only">Select Dataset</label>
+        <select id="dataset-switcher" title="Select Dataset">
+          <option value="classicx5">Classic X5</option>
+          <option value="classicx5dev">Classic X5 Dev</option>
+          <option value="6plustest">6+ Test</option>
+          <option value="reborn">Reborn</option>
+          <option value="dreamland">Dreamland</option>
+          <option value="legacy">Legacy</option>
+          <option value="guildwar">Guild War</option>
+        </select>
+      </div>
       <span class="tag">Search → Configure → Add to Collection → Tick Off</span>
       <span class="tag">Data cached locally</span>
     </header>

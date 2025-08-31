@@ -29,8 +29,13 @@ $("#tab-sets").addEventListener("click", () => {
   renderSetSelector();
 });
 
+// Dataset switcher
+$("#dataset-switcher").addEventListener("change", (e) => {
+  const newDataset = e.target.value;
+  switchDataset(newDataset);
+});
+
 $("#reload").addEventListener("click", () => {
-  localStorage.removeItem(LS_KEYS.DATA);
   $("#dataset-status").textContent = "reloading…";
   boot();
 });
@@ -41,10 +46,7 @@ $("#collection-search").addEventListener(
   "input",
   debounce(renderCollection, 120)
 );
-$("#set-search").addEventListener(
-  "input",
-  debounce(renderSetSelector, 120)
-);
+$("#set-search").addEventListener("input", debounce(renderSetSelector, 120));
 
 // Hide completed checkbox event
 $("#hide-completed").addEventListener("change", (e) => {
@@ -116,6 +118,7 @@ $("#wipe").addEventListener("click", () => {
     App.collection = [];
     persistCollection();
     renderCollection();
+    renderCollectionManager();
   }
 });
 
