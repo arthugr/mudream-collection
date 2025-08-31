@@ -873,7 +873,7 @@ function renderCollection() {
           onclick: () => toggleDone(originalIdx),
         },
         h("div", {
-          class: `set-item-status${c.done ? " completed" : " missing"}`,
+          class: "collection-checkbox",
         }),
         h("img", {
           class: "item-image",

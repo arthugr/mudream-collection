@@ -263,6 +263,11 @@ button.link {
   border-color: #4ade80;
 }
 
+.collection-set-item.completed .collection-checkbox {
+  background: #0e1b12;
+  border-color: #4ade80;
+}
+
 .collection-checkbox::after {
   content: "✓";
   color: #4ade80;
@@ -273,6 +278,10 @@ button.link {
 }
 
 .collection-row.done .collection-checkbox::after {
+  opacity: 1;
+}
+
+.collection-set-item.completed .collection-checkbox::after {
   opacity: 1;
 }
 .ok {
